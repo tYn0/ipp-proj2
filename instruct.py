@@ -287,6 +287,509 @@ class Ins_IDIV(Instruction):
         var1.var_type = "int"
         var1.value = var2.getValue() // var3.getValue()
 
+class Ins_LT(Instruction):
+    """LT instruction"""
+
+    def __init__(self, order):
+        super(Ins_LT, self).__init__(order)
+        self.opcode = "LT"
+
+    def execute(self):
+        self.printExecuting()
+        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != var3.var_type:
+            # TODO: Better error handling
+            print("Trying to compare two values of different type, exiting...")
+            exit(53)
+
+        var1.var_type = var2.var_type
+
+        if var2.getValue() < var3.getValue():
+            var1.value = "true"
+        else:
+            var1.value = "false"
+
+class Ins_GT(Instruction):
+    """GT instruction"""
+
+    def __init__(self, order):
+        super(Ins_GT, self).__init__(order)
+        self.opcode = "GT"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != var3.var_type:
+            # TODO: Better error handling
+            print("Trying to compare two values of different type, exiting...")
+            exit(53)
+
+        var1.var_type = var2.var_type
+
+        if var2.getValue() > var3.getValue():
+            var1.value = "true"
+        else:
+            var1.value = "false"
+
+class Ins_EQ(Instruction):
+    """EQ instruction"""
+
+    def __init__(self, order):
+        super(Ins_EQ, self).__init__(order)
+        self.opcode = "EQ"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != var3.var_type:
+            # TODO: Better error handling
+            print("Trying to compare two values of different type, exiting...")
+            exit(53)
+
+        var1.var_type = var2.var_type
+
+        if var2.getValue() == var3.getValue():
+            var1.value = "true"
+        else:
+            var1.value = "false"
+
+class Ins_AND(Instruction):
+    """AND instruction"""
+
+    def __init__(self, order):
+        super(Ins_AND, self).__init__(order)
+        self.opcode = "AND"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != "bool" or var3.var_type != "bool":
+            # TODO: Better error handling
+            print("Trying to compare two values of different type, exiting...")
+            exit(53)
+
+        var1.var_type = "bool"
+
+        if var2.getValue() == "true" and var3.getValue() == "true":
+            var1.value = "true"
+        else:
+            var1.value = "false"
+
+class Ins_OR(Instruction):
+    """OR instruction"""
+
+    def __init__(self, order):
+        super(Ins_OR, self).__init__(order)
+        self.opcode = "OR"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != "bool" or var3.var_type != "bool":
+            # TODO: Better error handling
+            print("Trying to compare two values of different type, exiting...")
+            exit(53)
+
+        var1.var_type = "bool"
+
+        if var2.getValue() == "true" or var3.getValue() == "true":
+            var1.value = "true"
+        else:
+            var1.value = "false"
+
+class Ins_NOT(Instruction):
+    """NOT instruction"""
+
+    def __init__(self, order):
+        super(Ins_NOT, self).__init__(order)
+        self.opcode = "NOT"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+
+        if var2.var_type != "bool":
+            # TODO: Better error handling
+            print("Trying to NOT a non-boolean value, exiting...")
+            exit(53)
+
+        var1.var_type = "bool"
+
+        if var2.getValue() == "true":
+            var1.value = "false"
+        else:
+            var1.value = "true"
+
+class Ins_INT2CHAR(Instruction):
+    """INT2CHAR instruction"""
+
+    def __init__(self, order):
+        super(Ins_INT2CHAR, self).__init__(order)
+        self.opcode = "INT2CHAR"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+
+        if var2.var_type != "int":
+            # TODO: Better error handling
+            print("Trying to convert non-int value, exiting...")
+            exit(53)
+
+        if var2.getValue() >= 1114112:
+            # TODO: Better error handling
+            print("Trying to convert out of range value, exiting...")
+            exit(58)
+
+        var1.var_type = "string"
+        var1.value = chr(var2.getValue())
+
+class Ins_STRI2INT(Instruction):
+    """STRI2INT instruction"""
+
+    def __init__(self, order):
+        super(Ins_STRI2INT, self).__init__(order)
+        self.opcode = "STRI2INT"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var2 = self.ops_list[2].toVar()
+
+        if var2.var_type != "string" or var3.var_type != "int":
+            # TODO: Better error handling
+            print("Wrong type, exiting...")
+            exit(53)
+
+        lenght = len(var2.getValue())-1
+
+        if var3.getValue() > lenght or var3.getValue() < 0:
+            # TODO: Better error handling
+            print("Out of bounds, exiting...")
+            exit(58)
+
+
+        index = var3.getValue()
+        value = ord(var2.getValue()[index]) #Access the character on index position
+
+        var1.var_type = "int"
+        var1.value = value
+
+class Ins_WRITE(Instruction):
+    """WRITE instruction"""
+
+    def __init__(self, order):
+        super(Ins_WRITE, self).__init__(order)
+        self.opcode = "WRITE"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+
+        #Get var1
+        var1 = self.ops_list[0].toVar()
+
+        #Print it
+        print(var1.getValue())
+
+class Ins_READ(Instruction):
+    """READ instruction"""
+
+    def __init__(self, order):
+        super(Ins_READ, self).__init__(order)
+        self.opcode = "READ"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+
+        #Get vars
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+
+        if var2.var_type != "type":
+            # TODO: Better error handling
+            print("Wrong type, exiting...")
+            exit(53)
+
+        if var2.getValue() not in {"int","bool","string"}:
+            # TODO: Better error handling
+            print("Wrong type, exiting...")
+            exit(53)
+
+        convertTo = var2.getValue()
+
+        if convertTo == "int":
+            var1.value = 0
+        elif convertTo == "string":
+            var1.value = ""
+        elif convertTo == "bool":
+            var1.value = "false"
+
+        var1.var_type = convertTo
+
+        inp = input()
+        var1.value = inp
+
+        if convertTo == "bool":
+            if inp.lower() == "true":
+                var1.value = "true"
+            else:
+                var1.value = "false"
+
+class Ins_CONCAT(Instruction):
+    """CONCAT instruction"""
+
+    def __init__(self, order):
+        super(Ins_CONCAT, self).__init__(order)
+        self.opcode = "CONCAT"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != "string" or var3.var_type != "string":
+            # TODO: Better error handling
+            print("Trying to concatenate non-string value, exiting...")
+            exit(53)
+
+        var1.var_type = "string"
+        var1.value =  var2.getValue() + var3.getValue()
+
+class Ins_STRLEN(Instruction):
+    """STRLEN instruction"""
+
+    def __init__(self, order):
+        super(Ins_STRLEN, self).__init__(order)
+        self.opcode = "STRLEN"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+
+        if var2.var_type != "string":
+            # TODO: Better error handling
+            print("Trying to get length of non-string value, exiting...")
+            exit(53)
+
+        var1.var_type = "int"
+        var1.value =  len(var2.getValue())
+
+class Ins_GETCHAR(Instruction):
+    """GETCHAR instruction"""
+
+    def __init__(self, order):
+        super(Ins_GETCHAR, self).__init__(order)
+        self.opcode = "GETCHAR"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != "string" or var3.var_type != "int":
+            # TODO: Better error handling
+            print("Wrong types, exiting...")
+            exit(53)
+
+        lenght = len(var2.getValue()) - 1
+
+        if var3.getValue() > lenght or var3.getValue() < 0:
+            # TODO: Better error handling
+            print("Out of bounds, exiting...")
+            exit(58)
+
+        index = var3.getValue()
+        value = var2.getValue()[index]
+
+        var1.var_type = "string"
+        var1.value = value
+
+class Ins_SETCHAR(Instruction):
+    """SETCHAR instruction"""
+
+    def __init__(self, order):
+        super(Ins_SETCHAR, self).__init__(order)
+        self.opcode = "SETCHAR"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var1.var_type != "string" or var2.var_type != "int" or var3.var_type != "string":
+            # TODO: Better error handling
+            print("Wrong types, exiting...")
+            exit(53)
+
+        lenght = len(var1.getValue()) - 1
+
+        if var2.getValue() > lenght or var2.getValue() < 0:
+            # TODO: Better error handling
+            print("Out of bounds, exiting...")
+            exit(58)
+
+        #If the length of string in var3 is more than 1, use the first character
+        index = var2.getValue()
+        if(len(var3.getValue()) > 1):
+            var1.value[index] = var3.getValue()[0]
+        else:
+            var1.value[index] = var3.getValue()
+
+class Ins_TYPE(Instruction):
+    """TYPE instruction"""
+
+    def __init__(self, order):
+        super(Ins_TYPE, self).__init__(order)
+        self.opcode = "TYPE"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+
+        var1.var_type = "string"
+        if var2.var_type is None:
+            var1.value = ""
+        else:
+            var1.value = var2.var_type
+
+class Ins_DPRINT(Instruction):
+    """DPRINT instruction"""
+
+    def __init__(self, order):
+        super(Ins_DPRINT, self).__init__(order)
+        self.opcode = "DPRINT"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+
+        print(var1.getValue(), file=sys.stderr)
+
+class Ins_BREAK(Instruction):
+    """BREAK instruction"""
+
+    def __init__(self, order):
+        super(Ins_BREAK, self).__init__(order)
+        self.opcode = "BREAK"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+
+        self.interpreter.debugInfo()
+
+class Ins_PUSHS(Instruction):
+    """PUSHS instruction"""
+
+    def __init__(self, order):
+        super(Ins_PUSHS, self).__init__(order)
+        self.opcode = "PUSHS"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+
+        var1 = self.ops_list[0].toVar()
+
+        self.interpreter.stackPUSHS(var1)
+
+class Ins_POPS(Instruction):
+    """POPS instruction"""
+
+    def __init__(self, order):
+        super(Ins_POPS, self).__init__(order)
+        self.opcode = "POPS"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+
+        var1 = self.ops_list[0].toVar()
+
+        ret = self.interpreter.stackPOPS()
+
+        if ret == -1:
+            # TODO: Better error handling
+            print("Trying to pop an empty stack, exiting...")
+            exit(56)
+
+        var1 = ret
+
+class Ins_CALL(Instruction):
+    """CALL instruction"""
+
+    def __init__(self, order):
+        super(Ins_CALL, self).__init__(order)
+        self.opcode = "CALL"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+
+        var1 = self.ops_list[0].toVar()
+        if var1.var_type != "label":
+            # TODO: Better error handling
+            print("Wrong type, exiting...")
+            exit(53)
+
+        label = var1.getValue()
+        self.interpreter.insCall(label,self.order)
+
+class Ins_RETURN(Instruction):
+    """RETURN instruction"""
+
+    def __init__(self, order):
+        super(Ins_RETURN, self).__init__(order)
+        self.opcode = "RETURN"
+
+    def execute(self):
+        self.printExecuting()
+        # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        ret = self.interpreter.insReturn()
+        if ret == -1:
+            # TODO: Better error handling
+            print("Trying to pop empty callstack, exiting...")
+            exit(56)
+
 class Operand:
     """Class representing single operand of an instruction"""
 
@@ -388,7 +891,7 @@ class Variable:
     def getValue(self):
         if self.value is None:
             # TODO: Better error handling
-            print("Trying to access uninitialize variable, exiting...")
+            print("Trying to access uninitialized variable, exiting...")
             exit(56)
         return self.value
 
@@ -441,6 +944,7 @@ class Interpreter:
         self.label_list = list()
         self.instructionCounter = int()
 
+        self.varStack = list() #Stack of variables to be used with POPS and PUSHS
         self.callStack = list() #Holds instruction number to return to on RETURN instruction
         self.frameStack = list() #Stack of frames
 
@@ -553,6 +1057,27 @@ class Interpreter:
                 return d
         return -1
 
+    def debugInfo(self):
+        #TODO Print some basic debug info
+        pass
+
+    def stackPOPS(self):
+        if len(self.varStack) == 0:
+            return -1
+        return self.varStack.pop()
+
+    def stackPUSHS(self, var):
+        self.varStack.append(var)
+
+    def insCall(self,label,order):
+        self.callStack.append(order)
+        self.jumpToLabel(label)
+
+    def insReturn(self):
+        if len(self.callStack) == 0:
+            return -1
+        jumpTo = self.callStack.pop()
+        self.instructionCounter = jumpTo
 
     def generateInstruction(self, opcode, order):
         """Generates empty(without operands)instruction according to opcode"""
@@ -569,7 +1094,28 @@ class Interpreter:
                         "ADD": Ins_ADD(order),
                         "SUB": Ins_SUB(order),
                         "MUL": Ins_MUL(order),
-                        "IDIV": Ins_IDIV(order)}
+                        "IDIV": Ins_IDIV(order),
+                        "LT": Ins_LT(order),
+                        "GT": Ins_GT(order),
+                        "EQ": Ins_EQ(order),
+                        "AND": Ins_AND(order),
+                        "OR": Ins_OR(order),
+                        "NOT": Ins_NOT(order),
+                        "INT2CHAR": Ins_INT2CHAR(order),
+                        "STRI2INT": Ins_STRI2INT(order),
+                        "WRITE": Ins_WRITE(order),
+                        "READ": Ins_READ(order),
+                        "CONCAT": Ins_CONCAT(order),
+                        "STRLEN": Ins_STRLEN(order),
+                        "GETCHAR": Ins_GETCHAR(order),
+                        "SETCHAR": Ins_SETCHAR(order),
+                        "TYPE": Ins_TYPE(order),
+                        "DPRINT": Ins_DPRINT(order),
+                        "BREAK": Ins_BREAK(order),
+                        "PUSHS": Ins_PUSHS(order),
+                        "POPS": Ins_POPS(order),
+                        "CALL": Ins_CALL(order),
+                        "RETURN": Ins_RETURN(order)}
 
         if opcode not in instructions:
             # TODO: Better error handling
