@@ -33,7 +33,4 @@
 	<instruction order="11" opcode="LABEL">
 		<arg1 type="label">testlabel2</arg1>
 	</instruction>
-	<instruction order="12" opcode="JUMP">
-		<arg1 type="label">testlabel1</arg1>
-	</instruction>
 </program>

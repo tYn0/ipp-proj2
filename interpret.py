@@ -19,7 +19,6 @@ inter = ins.Interpreter(file)
 
 inter.interpret()
 inter.dumpFrames()
-print(inter.label_list)
 
 
 

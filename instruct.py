@@ -108,34 +108,11 @@ class Ins_MOVE(Instruction):
         self.printExecuting()
         # self.check() TODO: Perform a check of operands (number of arguments, type etc...)
 
-        operand1 = self.ops_list[0].getValue()
-        frame = operand1[0]  # Frame
-        name = operand1[1]  # Variable name
-
-        var1 = self.interpreter.getVarFromFrame(frame, name)
-        if var1 == -1:
-            # TODO: Better error handling
-            print("Variable does not exists in frame {0}, exiting...".format(frame))
-            exit(54)
-
-        operand2 = self.ops_list[1]
-        if operand2.isVar() is True:
-            #If it is a variable,  get it from the specified frame
-            operand2 = operand2.getValue()
-            frame = operand2[0]  # Frame
-            name = operand2[1]  # Variable name
-            var2 = self.interpreter.getVarFromFrame(frame, name)
-            if var2 == -1:
-                # TODO: Better error handling
-                print("Variable does not exists in frame {0}, exiting...".format(frame))
-                exit(54)
-            #Set value and type in variable1 to variable2
-            var1.value = var2.value
-            var1.var_type = var2.var_type
-        else:
-            # Set value and type in variable1 to variable2
-            var1.value = operand2.getValue()
-            var1.var_type = operand2.v_type
+        #Get var1 and var2
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var1.value = var2.getValue()
+        var1.var_type = var2.var_type
 
 class Ins_LABEL(Instruction):
     """LABEL instruction"""
@@ -147,11 +124,12 @@ class Ins_LABEL(Instruction):
     def execute(self):
         self.printExecuting()
         #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
-        label = self.ops_list[0].getValue()
+        var = self.ops_list[0].toVar()
+        label = var.getValue()
         self.interpreter.addLabel(label, self.order)
 
 class Ins_JUMP(Instruction):
-    """LABEL instruction"""
+    """JUMP instruction"""
 
     def __init__(self, order):
         super(Ins_JUMP, self).__init__(order)
@@ -160,9 +138,154 @@ class Ins_JUMP(Instruction):
     def execute(self):
         self.printExecuting()
         #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
-        label = self.ops_list[0].getValue()
+        var = self.ops_list[0].toVar()
+        label = var.getValue()
         self.interpreter.jumpToLabel(label)
 
+class Ins_JUMPIFEQ(Instruction):
+    """JUMPIFEQ instruction"""
+
+    def __init__(self, order):
+        super(Ins_JUMPIFEQ, self).__init__(order)
+        self.opcode = "JUMPIFEQ"
+
+    def execute(self):
+        self.printExecuting()
+        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        label = var1.getValue()
+
+        #Compare the types
+        if var2.var_type != var3.var_type:
+            # TODO: Better error handling
+            print("Trying to compare two values of different type, exiting...")
+            exit(53)
+
+        #Compare the values
+        if var2.getValue() == var3.getValue():
+            self.interpreter.jumpToLabel(label)
+
+class Ins_JUMPIFNEQ(Instruction):
+    """JUMPIFNEQ instruction"""
+
+    def __init__(self, order):
+        super(Ins_JUMPIFNEQ, self).__init__(order)
+        self.opcode = "JUMPIFNEQ"
+
+    def execute(self):
+        self.printExecuting()
+        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        label = var1.getValue()
+
+        #Compare the types
+        if var2.var_type != var3.var_type:
+            # TODO: Better error handling
+            print("Trying to compare two values of different type, exiting...")
+            exit(53)
+
+        #Compare the values
+        if var2.getValue() != var3.getValue():
+            self.interpreter.jumpToLabel(label)
+
+class Ins_ADD(Instruction):
+    """ADD instruction"""
+
+    def __init__(self, order):
+        super(Ins_ADD, self).__init__(order)
+        self.opcode = "ADD"
+
+    def execute(self):
+        self.printExecuting()
+        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != "int" or var3.var_type != "int":
+            # TODO: Better error handling
+            print("Trying to ADD two values of different type, exiting...")
+            exit(53)
+
+        var1.var_type = "int"
+        var1.value = var2.getValue() + var3.getValue()
+
+class Ins_SUB(Instruction):
+    """SUB instruction"""
+
+    def __init__(self, order):
+        super(Ins_SUB, self).__init__(order)
+        self.opcode = "SUB"
+
+    def execute(self):
+        self.printExecuting()
+        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != "int" or var3.var_type != "int":
+            # TODO: Better error handling
+            print("Trying to SUB two values of different type, exiting...")
+            exit(53)
+
+        var1.var_type = "int"
+        var1.value = var2.getValue() - var3.getValue()
+
+class Ins_MUL(Instruction):
+    """MUL instruction"""
+
+    def __init__(self, order):
+        super(Ins_MUL, self).__init__(order)
+        self.opcode = "MUL"
+
+    def execute(self):
+        self.printExecuting()
+        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != "int" or var3.var_type != "int":
+            # TODO: Better error handling
+            print("Trying to MUL two values of different type, exiting...")
+            exit(53)
+
+        var1.var_type = "int"
+        var1.value = var2.getValue() * var3.getValue()
+
+class Ins_IDIV(Instruction):
+    """IDIV instruction"""
+
+    def __init__(self, order):
+        super(Ins_IDIV, self).__init__(order)
+        self.opcode = "IDIV"
+
+    def execute(self):
+        self.printExecuting()
+        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
+        var1 = self.ops_list[0].toVar()
+        var2 = self.ops_list[1].toVar()
+        var3 = self.ops_list[2].toVar()
+
+        if var2.var_type != "int" or var3.var_type != "int":
+            # TODO: Better error handling
+            print("Trying to IDIV two values of different type, exiting...")
+            exit(53)
+
+        if var3.getValue() == 0:
+            # TODO: Better error handling
+            print("Trying to divide by zero, exiting...")
+            exit(57)
+
+        var1.var_type = "int"
+        var1.value = var2.getValue() // var3.getValue()
 
 class Operand:
     """Class representing single operand of an instruction"""
@@ -175,6 +298,7 @@ class Operand:
         """Checks if the operand is valid"""
         # TODO: Alot of checking to do here
         if self.v_type == "int":
+            self.value = int(self.value)
             pass
         elif self.v_type == "bool":
             pass
@@ -190,6 +314,23 @@ class Operand:
             # TODO: Better error handling
             print("Non-existing type, exiting...")
             exit(53)
+
+    def toVar(self):
+        self.check()
+        if self.v_type == "var":
+            split = self.value.split("@")
+            frame = split[0]
+            name = split[1]
+
+            #Get variable from specified frame
+            var = Interpreter.getInstance().getVarFromFrame(frame, name)
+            if var == -1:
+                # TODO: Better error handling
+                print("Variable does not exists in frame {0}, exiting...".format(frame))
+                exit(54)
+            return var
+        elif self.v_type in {"int","bool","string","label","type"}:
+            return Variable("literal", self.value, self.v_type)
 
     def getValue(self):
         self.check()
@@ -243,6 +384,13 @@ class Variable:
         self.name = name
         self.value = value
         self.var_type = var_type
+
+    def getValue(self):
+        if self.value is None:
+            # TODO: Better error handling
+            print("Trying to access uninitialize variable, exiting...")
+            exit(56)
+        return self.value
 
     def printVar(self):
         print("Variable '{0}' has value '{1}' and type '{2}'".format(self.name,self.value,self.var_type))
@@ -394,6 +542,7 @@ class Interpreter:
             exit(52)
 
         #Set the instruction counter to the label position
+        #print("Jumping to instruction number {0}".format(label_dict[label]+1))
         self.instructionCounter = label_dict[label]
 
 
@@ -414,7 +563,13 @@ class Interpreter:
                         "PUSHFRAME": Ins_PUSHFRAME(order),
                         "POPFRAME": Ins_POPFRAME(order),
                         "LABEL": Ins_LABEL(order),
-                        "JUMP": Ins_JUMP(order)}
+                        "JUMP": Ins_JUMP(order),
+                        "JUMPIFEQ": Ins_JUMPIFEQ(order),
+                        "JUMPIFNEQ": Ins_JUMPIFNEQ(order),
+                        "ADD": Ins_ADD(order),
+                        "SUB": Ins_SUB(order),
+                        "MUL": Ins_MUL(order),
+                        "IDIV": Ins_IDIV(order)}
 
         if opcode not in instructions:
             # TODO: Better error handling
