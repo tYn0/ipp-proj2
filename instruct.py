@@ -1,4 +1,6 @@
 import xml.etree.ElementTree as ET
+import sys
+import re
 
 class Instruction:
     """Class representing an instruction"""
@@ -11,10 +13,7 @@ class Instruction:
 
     def addOperand(self, operand=None):
         if operand is None:
-            # TODO: Better error handling
-            print("Trying to add empty operand, exiting...")
-            exit(99)
-
+            self.interpreter.raiseError(99, "Trying to add empty operand, exiting...")
         self.ops_list.append(operand)
 
     def printOperands(self):
@@ -33,8 +32,8 @@ class Instruction:
         self.printOperands()
 
     def printExecuting(self):
-        print("Instruction {0} executing, order is {1}".format(self.opcode,self.order))
-
+        return
+        print("Instruction {0} executing, order is {1}, counter is {2}".format(self.opcode, self.order, self.interpreter.instructionCounter) )
 
 class Ins_POPFRAME(Instruction):
     """POPFRAME instruction"""
@@ -45,7 +44,6 @@ class Ins_POPFRAME(Instruction):
 
     def execute(self):
         self.printExecuting()
-        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
         self.interpreter.popFrame()
 
 class Ins_PUSHFRAME(Instruction):
@@ -57,7 +55,6 @@ class Ins_PUSHFRAME(Instruction):
 
     def execute(self):
         self.printExecuting()
-        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
         self.interpreter.pushFrame()
 
 class Ins_CREATEFRAME(Instruction):
@@ -69,7 +66,6 @@ class Ins_CREATEFRAME(Instruction):
 
     def execute(self):
         self.printExecuting()
-        #self.check() TODO: Perform a check of operands (number of arguments, type etc...)
         self.interpreter.createTempFrame()
 
 class Ins_DEFVAR(Instruction):
@@ -93,9 +89,7 @@ class Ins_DEFVAR(Instruction):
             var = Variable(name) #Create new variable
             self.interpreter.addVarToFrame(frame, var)
         else:
-            # TODO: Better error handling
-            print("Variable already exists in frame {0}, exiting...".format(frame))
-            exit(54)
+            self.interpreter.raiseError(54, "Variable already exists in frame {0}, exiting...".format(frame))
 
 class Ins_MOVE(Instruction):
     """MOVE instruction"""
@@ -111,8 +105,18 @@ class Ins_MOVE(Instruction):
         #Get var1 and var2
         var1 = self.ops_list[0].toVar()
         var2 = self.ops_list[1].toVar()
-        var1.value = var2.getValue()
+
         var1.var_type = var2.var_type
+
+        if var2.getValue() is None:
+            if var1.var_type == "string":
+                var1.value = ""
+            elif var1.var_type == "int":
+                var1.value = 0
+            elif var1.var_type == "bool":
+                var1.value = "false"
+        else:
+            var1.value = var2.getValue()
 
 class Ins_LABEL(Instruction):
     """LABEL instruction"""
@@ -799,24 +803,50 @@ class Operand:
 
     def check(self):
         """Checks if the operand is valid"""
-        # TODO: Alot of checking to do here
+
+        #Literal without value (int,string or bool), nothing to check
+        if self.value is None and self.v_type in {"int","bool","string"}:
+            return
+        elif self.value is None:
+            Interpreter.getInstance().raiseError(52, "No value, exiting...")
+
         if self.v_type == "int":
-            self.value = int(self.value)
-            pass
+            p = re.compile("^-?\d*$") #Regular expressions are black magic
+            m = p.match(self.value)
+            if m:
+                self.value = int(self.value)
+            else:
+                Interpreter.getInstance().raiseError(52, "Expected integer number, exiting...")
+
         elif self.v_type == "bool":
-            pass
+            if self.value != "true" or self.value != "false":
+                Interpreter.getInstance().raiseError(52, "Expected boolean value, exiting...")
         elif self.v_type == "string":
-            pass
+            pass # TODO :/
         elif self.v_type == "label":
-            pass
+            self.checkName(self.value)
         elif self.v_type == "type":
-            pass
+            if self.value not in {"int", "bool", "string"}:
+                Interpreter.getInstance().raiseError(52, "Non-existing type {0}, exiting...".format(self.value))
         elif self.v_type == "var":
-            pass
+            split = self.value.split("@")
+            if len(split) != 2: #We need a list with exactly 2 strings
+                Interpreter.getInstance().raiseError(52, "Wrong variable definition, exiting...")
+            frame = split[0]
+            name = split[1]
+            #Check the frame
+            if frame not in {"GF","TF","LF"}:
+                Interpreter.getInstance().raiseError(52, "Invalid frame {0}, exiting...".format(frame))
+            #Check the name
+            self.checkName(name)
         else:
-            # TODO: Better error handling
-            print("Non-existing type, exiting...")
-            exit(53)
+            Interpreter.getInstance().raiseError(52, "Non-existing type {0}, exiting...".format(self.v_type))
+
+    def checkName(self, name):
+        p = re.compile("^[A-Za-z_$*&%-]{1}[A-Z0-9a-z_$*&%-]*$")  # First character cannot be a number
+        m = p.match(name)
+        if not m:
+            Interpreter.getInstance().raiseError(52, "Name {0} contains illegal character, exiting...".format(name))
 
     def toVar(self):
         self.check()
@@ -828,9 +858,7 @@ class Operand:
             #Get variable from specified frame
             var = Interpreter.getInstance().getVarFromFrame(frame, name)
             if var == -1:
-                # TODO: Better error handling
-                print("Variable does not exists in frame {0}, exiting...".format(frame))
-                exit(54)
+                Interpreter.getInstance().raiseError(54, "Variable does not exists in frame {0}, exiting...".format(frame))
             return var
         elif self.v_type in {"int","bool","string","label","type"}:
             return Variable("literal", self.value, self.v_type)
@@ -850,36 +878,6 @@ class Operand:
         elif self.v_type == "var":
             return self.value.split("@")
 
-    def isVar(self):
-        if self.v_type == "var":
-            return True
-        return False
-
-    def isInt(self):
-        if self.v_type == "int":
-            return True
-        return False
-
-    def isBool(self):
-        if self.v_type == "bool":
-            return True
-        return False
-
-    def isString(self):
-        if self.v_type == "string":
-            return True
-        return False
-
-    def isLabel(self):
-        if self.v_type == "label":
-            return True
-        return False
-
-    def isType(self):
-        if self.v_type == "type":
-            return True
-        return False
-
 class Variable:
     """Class representing single variable to be stored in a frame"""
 
@@ -889,10 +887,8 @@ class Variable:
         self.var_type = var_type
 
     def getValue(self):
-        if self.value is None:
-            # TODO: Better error handling
-            print("Trying to access uninitialized variable, exiting...")
-            exit(56)
+        if self.var_type is None:
+            Interpreter.getInstance().raiseError(56, "Trying to access uninitialized variable {0}, exiting...".format(self.name))
         return self.value
 
     def printVar(self):
@@ -906,9 +902,7 @@ class Frame:
 
     def addVar(self, var=None):
         if var is None:
-            # TODO: Better error handling
-            print("Trying to add empty variable, exiting...")
-            exit(99)
+            Interpreter.getInstance().raiseError(99, "Trying to add empty variable, exiting...")
         self.content.append(var)
 
     def getVar(self,name):
@@ -954,18 +948,20 @@ class Interpreter:
 
         self.loadFromXML(file)
 
+    def raiseError(self, errcode, message=None):
+        print(message)
+        exit(errcode)
+
     def getLocalFrame(self):
         if self.localFrame is None:
-            # TODO: Better error handling
-            print("No local frame, exiting...")
-            exit(55)
+            self.raiseError(55, "No local frame, exiting...")
+
         return self.localFrame
 
     def getTempFrame(self):
         if self.tempFrame is None:
-            # TODO: Better error handling
-            print("No temporary frame, exiting...")
-            exit(55)
+            self.raiseError(55, "No temporary frame, exiting...")
+
         return self.tempFrame
 
     def getGlobalFrame(self):
@@ -1006,9 +1002,7 @@ class Interpreter:
 
     def pushFrame(self):
         if self.tempFrame is None:
-            # TODO: Better error handling
-            print("No temporary frame, exiting...")
-            exit(55)
+            self.raiseError(55,"No temporary frame, exiting...")
 
         self.frameStack.append(self.tempFrame) #Push tempFrame to stack
         self.refreshLocalFrame() #Set new local frame
@@ -1016,9 +1010,7 @@ class Interpreter:
 
     def popFrame(self):
         if self.localFrame is None:
-            # TODO: Better error handling
-            print("No local frame, exiting...")
-            exit(55)
+            self.raiseError(55,"No local frame, exiting...")
 
         self.tempFrame = self.frameStack.pop() #Pop the stack
         self.refreshLocalFrame() #Refresh to new localFrame
@@ -1033,8 +1025,7 @@ class Interpreter:
     def addLabel(self,label,order):
         """Adds label to the list of labels"""
         if (self.findLabel(label) != -1):
-            print("Label {0} already defined, exiting...".format(label))
-            exit(52)
+            self.raiseError(52,"Label {0} already defined, exiting...".format(label))
 
         #Seems fine, add to the label list
         self.label_list.append({label: order})
@@ -1042,8 +1033,7 @@ class Interpreter:
     def jumpToLabel(self, label):
         label_dict = self.findLabel(label)
         if (label_dict == -1):
-            print("Label {0} is not defined, exiting...".format(label))
-            exit(52)
+            self.raiseError(52, "Label {0} is not defined, exiting...".format(label))
 
         #Set the instruction counter to the label position
         #print("Jumping to instruction number {0}".format(label_dict[label]+1))
@@ -1058,8 +1048,7 @@ class Interpreter:
         return -1
 
     def debugInfo(self):
-        #TODO Print some basic debug info
-        pass
+        print("Instruction counter = {0}".format(self.instructionCounter),file = sys.stderr)
 
     def stackPOPS(self):
         if len(self.varStack) == 0:
@@ -1118,18 +1107,14 @@ class Interpreter:
                         "RETURN": Ins_RETURN(order)}
 
         if opcode not in instructions:
-            # TODO: Better error handling
-            print("Unknown operation code {0}, exiting...".format(opcode))
-            exit(32)
+            self.raiseError(32, "Unknown operation code {0}, exiting...".format(opcode))
 
         return instructions[opcode]
 
     def addToList(self, instruction=None):
         """Adds instruction to the list of instructions"""
         if instruction is None:
-            # TODO: Better error handling
-            print("Trying to add empty instruction, exiting...")
-            exit(99)
+            self.raiseError(99, "Trying to add empty instruction, exiting...")
 
         self.instruction_list.append(instruction)
 
@@ -1148,8 +1133,8 @@ class Interpreter:
         tree = ET.parse(file)
         root = tree.getroot()
 
-        # TODO: Check if root language is IPPcode18
-        # print(root.attrib)
+        if root.attrib["language"].lower() != "ippcode18":
+            self.raiseError(52, "Program language is not IPPcode18, exiting...")
 
         for instruct in root:
             # Generate instruction and save it in i
@@ -1165,14 +1150,23 @@ class Interpreter:
         self.instructionCounter = 1
         totalInstructions = len(self.instruction_list)+1
 
+        self.buildLabels()
+
         while(self.instructionCounter != totalInstructions):
             #Load next instruction according to instructionCounter and execute it
             nextInstruction = self.getInsFromList(self.instructionCounter)
+
+            #If we got a label instruction, skip it
+            if nextInstruction.opcode == "LABEL":
+                self.instructionCounter = self.instructionCounter + 1
+                continue
+
             nextInstruction.execute()
 
             #Increment the instruction counter
             self.instructionCounter = self.instructionCounter + 1
 
-    def start(self):
+    def buildLabels(self):
         for instruction in self.instruction_list:
-            instruction.execute()
+            if instruction.opcode == "LABEL":
+                instruction.execute()

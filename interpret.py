@@ -10,7 +10,6 @@ args = vars(parser.parse_args())
 file = args["source"]
 
 if os.path.isfile(file) is False:
-    #TODO: Better error handling
     print("Specified file does not exist, exiting...")
     exit(11)
 
@@ -18,7 +17,6 @@ if os.path.isfile(file) is False:
 inter = ins.Interpreter(file)
 
 inter.interpret()
-inter.dumpFrames()
 
 
 
